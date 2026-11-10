@@ -11,8 +11,8 @@ import cv2 as cv
 import numpy as np
 from PIL import Image
 
-from . import astrometry, background, color, compose, flare, geometry, raw, sharpness
-from . import sky_render, sun_glow, texture, video, video_grain
+from . import amoled, astrometry, background, color, compose, flare, geometry, raw, sharpness
+from . import sky_render, star_shape, sun_glow, texture, video, video_grain
 
 
 @dataclass(frozen=True)
@@ -23,6 +23,8 @@ class Settings:
     screen_grain: bool = True
     clean_flare: bool = True
     sun_glow: bool = True
+    amoled: bool = False
+    correct_stars: bool = True
     sharpness: str = "conventional"
 
 
@@ -70,6 +72,8 @@ class Project:
         edge=np.min(np.minimum(observed,np.array([w,h])-1-observed),axis=1)
         self.anchors=self.project(observed[edge<self.render_cfg["feather"]+12])
         self.points=self.project(np.vstack((observed,self.venus)))
+        self.amoled_points=self.project(self.astro["detections"].xy)
+        self.amoled_venus=self.project(self.venus)
         camera=self.astro["camera"]
         vectors=self.astro["vectors"]
         self.excluded=np.vstack((camera.pixel(vectors[camera.in_front(vectors)]),
@@ -138,6 +142,10 @@ class Project:
         master,_=compose.compose(variant.photo,variant.sky_background,stars,self.affine,self.size,
                                  self.render_cfg["feather"],self.anchors,donors,
                                  viewport=viewport,sample=sample,cancel=cancel)
+        if options.correct_stars and sample==1:
+            points=self.amoled_points if stars is None else np.vstack((self.amoled_points,stars.xy))
+            star_shape.apply(master,points,self.limb,self.affine,viewport=viewport,
+                             cfg=self.cfg.get("correct_stars",{}),cancel=cancel)
         if options.screen_grain and sample==1:
             if self.grain_model is None:
                 with self.grain_lock:
@@ -154,6 +162,10 @@ class Project:
             affine=self.affine.copy()
             affine[:,2]-=origin
             sharpness.apply(master,self.limb,affine,points-origin,self.cfg["sharpness"],cancel=cancel)
+        if options.amoled:
+            amoled.apply(master,self.limb,self.affine,self.amoled_points,self.amoled_venus,
+                         catalog_points=stars.xy if stars is not None else (),
+                         viewport=viewport,sample=sample,cfg=self.cfg.get("amoled",{}),cancel=cancel)
         return master
 
     def preview(self, options, size, area, dimensions=(1600,800)):
@@ -181,7 +193,7 @@ class Project:
         """Render only the visible portion of the wallpaper in master coordinates."""
         cw,ch=dimensions
         layout=view_layout(self.size,size,self.keep,dimensions,center,zoom)
-        canvas=Image.new("RGB",(cw,ch),(8,13,22))
+        canvas=Image.new("RGB",(cw,ch),(0,0,0) if options.amoled else (8,13,22))
         if layout is None:
             return canvas
         (sx0,sy0,sx1,sy1),(dx0,dy0,dx1,dy1),scale=layout
@@ -200,7 +212,7 @@ class Project:
 
     def save(self, options, size, path: Path):
         master=self.render(options)
-        image=compose.resize_wallpaper(master,size,self.keep)
+        image=compose.resize_wallpaper(master,size,self.keep,black_padding=options.amoled)
         temporary=path.with_name(f".{path.stem}.partial{path.suffix}")
         try:
             compose.save_wallpaper(temporary,image,self.icc)

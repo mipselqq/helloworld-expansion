@@ -29,6 +29,8 @@ minimum_snr = 5.0
 minimum_projection_inliers = 12
 bootstrap_trials = 48
 max_extension_uncertainty_px = 12.0
+extension_flux_gain = 3.0
+extension_gain_fade_px = 180.0
 
 [render]
 seed = 5565
@@ -81,6 +83,23 @@ outer_cos = 0.35
 inner_cos = 0.72
 rim_start = 1.025
 rim_end = 1.24
+
+[amoled]
+enabled = false
+limb_start = 1.025
+limb_end = 1.075
+star_core_px = 3.5
+star_fade_px = 5.0
+venus_core_px = 20.0
+venus_fade_px = 28.0
+grain_highpass_px = 3.0
+
+[correct_stars]
+enabled = true
+radius_px = 10
+minimum_axis_ratio = 1.12
+maximum_axis_ratio = 2.5
+minimum_snr = 4.5
 
 [sharpness]
 enabled = true

@@ -109,7 +109,7 @@ def frame_box(source_size, target_size, keep=(0,0)):
     return box,content
 
 
-def resize_wallpaper(master, size, keep=(0,0)):
+def resize_wallpaper(master, size, keep=(0,0), *, black_padding=False):
     """Resample the display-referred RGB image in linear light."""
     mh,mw=master.shape[:2]
     w,h=size
@@ -123,7 +123,7 @@ def resize_wallpaper(master, size, keep=(0,0)):
         resized=np.asarray(channel.resize(content,Image.Resampling.LANCZOS,box=box))
         codes=np.uint16(np.rint(np.clip(srgb_encode(resized),0,1)*65535))
         if content!=(w,h):
-            rgb[...,c]=np.median(codes[[0,-1],:])
+            rgb[...,c]=0 if black_padding else np.median(codes[[0,-1],:])
         rgb[top:top+content[1],left:left+content[0],c]=codes
     return rgb
 
@@ -138,11 +138,11 @@ def save_wallpaper(path, rgb, icc):
         raise ValueError("Выберите PNG или TIFF.")
 
 
-def save_exports(master, output, cfg, icc):
+def save_exports(master, output, cfg, icc, *, black_padding=False):
     save_wallpaper(output/"artemis_ii_21x9_master.png",master,icc)
     save_wallpaper(output/"artemis_ii_21x9_master_16bit.tif",master,icc)
     w,h=cfg["desktop_width"],cfg["desktop_height"]
-    rgb=np.uint8(np.rint(resize_wallpaper(master,(w,h)).astype(np.float32)/257))
+    rgb=np.uint8(np.rint(resize_wallpaper(master,(w,h),black_padding=black_padding).astype(np.float32)/257))
     Image.fromarray(rgb).save(output/"artemis_ii_3440x1440.png",icc_profile=icc)
     preview=Image.fromarray(rgb).resize((1720,720),Image.Resampling.LANCZOS)
     preview.save(output/"preview.jpg",quality=94,subsampling=0,icc_profile=icc)

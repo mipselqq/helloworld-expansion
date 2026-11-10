@@ -32,10 +32,14 @@ def test_preview_is_replaceable_during_export(monkeypatch, tmp_path):
     root = tk.Tk()
     root.withdraw()
     monkeypatch.setattr(gui, 'screens', lambda: [])
-    monkeypatch.setattr(gui.filedialog, 'asksaveasfilename', lambda **kw: str(tmp_path/'out.png'))
     app = gui.StudioWindow(root, Path('config.toml'), fullscreen=False)
+    picker = SimpleNamespace(poll=lambda: 0, returncode=0,
+                             communicate=lambda: (str(tmp_path/'out.png')+'\n',''))
+    monkeypatch.setattr(gui.subprocess, 'Popen', lambda *args, **kwargs: picker)
     fake = FakeProject()
     app.project = fake
+    assert app.settings().correct_stars is True
+    assert app.settings().amoled is False
     def wait_for(check, timeout=5):
         end = time.monotonic() + timeout
         while time.monotonic() < end:
@@ -49,50 +53,49 @@ def test_preview_is_replaceable_during_export(monkeypatch, tmp_path):
         app.save()
         wait_for(fake.save_started.is_set)
         app.variables['grade'].set(False)
+        app.variables['amoled'].set(True)
         app.wheel(SimpleNamespace(x=10, y=10, num=4, delta=0))
         assert app.zoom > 1
         wait_for(lambda: bool(fake.previews) and app.displayed_revision == app.revision)
         assert not fake.previews[-1][0].grade
+        assert fake.previews[-1][0].amoled
         assert not fake.save_done.is_set()
     finally:
         fake.save_done.set()
         app.close()
 
 
-def test_save_dialog_file_list_has_readable_colors(monkeypatch, tmp_path):
-    import tkinter as tk
-    from tkinter import filedialog
-    from artemis import gui
 
+@pytest.mark.parametrize("returncode, filename, error", [
+    (1, "", False),
+    (0, "/tmp/wallpaper.jpeg", True),
+    (2, "", True),
+])
+def test_native_picker_cancel_and_errors(monkeypatch, returncode, filename, error):
+    import tkinter as tk
+    from artemis import gui
     root = tk.Tk()
     root.withdraw()
-    monkeypatch.setattr(gui, 'screens', lambda: [])
-    app = gui.StudioWindow(root, Path('config.toml'), fullscreen=False)
-    # Disable the scheduled preview for this short visual-style test.
-    app.displayed_revision = app.revision
-    (tmp_path/'wallpaper.png').write_bytes(b'')
-    observed = {}
-    def inspect():
-        def walk(widget):
-            yield widget
-            for child in root.tk.splitlist(root.tk.call('winfo','children',widget)):
-                yield from walk(child)
-        widgets = list(walk('.'))
-        for widget in widgets:
-            if str(root.tk.call('winfo','class',widget)) != 'Canvas' or '.icons.' not in widget:
-                continue
-            observed['background'] = root.tk.call(widget,'cget','-background')
-            for item in root.tk.splitlist(root.tk.call(widget,'find','all')):
-                if root.tk.call(widget,'type',item) == 'text':
-                    observed['foreground'] = root.tk.call(widget,'itemcget',item,'-fill')
-                    break
-        for widget in widgets:
-            if widget.endswith('.contents.f2.cancel'):
-                root.tk.call(widget,'invoke')
-                break
-    root.after(500, inspect)
+    monkeypatch.setattr(gui, "screens", lambda: [])
+    app = gui.StudioWindow(root, Path("config.toml"), fullscreen=False)
+    errors = []
+    commands = []
+    monkeypatch.setattr(gui.messagebox, "showerror", lambda *args, **kwargs: errors.append(args))
+    picker = SimpleNamespace(poll=lambda: returncode, returncode=returncode,
+                             communicate=lambda: (filename, "test failure"))
+    def launch(command, **kwargs):
+        commands.append(command)
+        return picker
+    monkeypatch.setattr(gui.subprocess, "Popen", launch)
     try:
-        filedialog.asksaveasfilename(parent=root,initialdir=tmp_path,initialfile='out.png')
-        assert observed == {'background': '#202d3d', 'foreground': '#e5edf7'}
+        app.save()
+        app.finish_save_picker()
+        assert commands[0][0] == "kdialog"
+        assert "--getsavefilename" in commands[0]
+        assert "*.tif *.tiff|TIFF (16-bit)" in commands[0][-1]
+        assert bool(errors) == error
+        assert app.save_future is None
+        assert app.save_picker is None
+        assert "disabled" not in app.save_button.state()
     finally:
         app.close()

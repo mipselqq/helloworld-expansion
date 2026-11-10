@@ -12,7 +12,7 @@ import cv2 as cv
 import numpy as np
 from PIL import Image
 
-from . import astrometry, background, color, compose, flare, geometry, raw, sharpness, sky_render, sun_glow, texture, validation, video, video_grain
+from . import amoled, astrometry, background, color, compose, flare, geometry, raw, sharpness, sky_render, star_shape, sun_glow, texture, validation, video, video_grain
 from .acquire import acquire, sha256, write_json
 from .report import make_report
 
@@ -120,6 +120,11 @@ def run(config, offline, refresh_video, stage):
     donors=texture.find_donors(graded,bg,limb,excluded,rotation,cfg["render"])
     print("Eligible source grain windows",len(donors.centers),flush=True)
     master,grain_sigma=compose.compose(graded,bg,sky,affine,dimensions,cfg["render"]["feather"],anchors,donors)
+    star_cfg=cfg.get("correct_stars",{})
+    star_stats={"enabled":False}
+    if star_cfg.get("enabled",False):
+        candidates=astro["detections"].xy@rotation.T+affine[:,2]
+        star_stats=star_shape.apply(master,np.vstack((candidates,sky.xy)),limb,affine,cfg=star_cfg)
     grain_cfg=cfg["video_grain"]
     cinematic={"enabled":False}
     if grain_cfg["enabled"]:
@@ -136,7 +141,14 @@ def run(config, offline, refresh_video, stage):
         sharpness.apply(master,limb,affine,np.vstack((points,sky.xy)),detail_cfg)
         detail=sharpness.evaluate(master,probe,out/"sharpness_comparison.png",detail_cfg)
         print("Aurora detail check",detail["metrics"]["final"],flush=True)
-    compose.save_exports(master,out,cfg["render"],icc)
+    amoled_cfg=cfg.get("amoled",{})
+    amoled_stats={"enabled":False}
+    if amoled_cfg.get("enabled",False):
+        candidates=astro["detections"].xy@rotation.T+affine[:,2]
+        venus_master=astro["venus_xy"]@rotation.T+affine[:,2]
+        amoled_stats=amoled.apply(master,limb,affine,candidates,venus_master,
+                                  catalog_points=sky.xy,cfg=amoled_cfg)
+    compose.save_exports(master,out,cfg["render"],icc,black_padding=amoled_stats["enabled"])
     texture_stats=validation.texture_comparison(out/"sky_texture_comparison.png",master,
                              cfg["render"]["texture_probe_origins"],cfg["render"]["texture_probe_size"])
     seams=validation.seam_plot(out/"seam_analysis.png",master,affine,rgb.shape,cfg["render"]["feather"])
@@ -194,6 +206,8 @@ def run(config, offline, refresh_video, stage):
             "wcs":wcs,"stellar_photometry":sky.stats},
         "flare":flare_stats,
         "sun_glow":glow_stats,
+        "amoled":amoled_stats,
+        "correct_stars":star_stats,
         "video_grain":cinematic,
         "sharpness":detail,
         "background":{"floor_srgb":bg.floor.tolist(),"residual_covariance":bg.covariance.tolist(),

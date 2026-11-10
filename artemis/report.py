@@ -101,6 +101,8 @@ SPICE used the postflight JSC Best Estimated Trajectory for Orion (NAIF -24), JP
 
 ## Extension and visibility
 
+The extension uses an artistic linear-flux multiplier of {sky.get('extension_flux_gain',1.0):g}, smoothly introduced over {sky.get('extension_gain_fade_px',180.0):g} native pixels beyond the photograph. A multiplier of one restores the fitted photometric brightness.
+
 Hipparcos coordinates were propagated from epoch J1991.25 with proper motion, barycentric observer parallax and first-order stellar aberration. The detection function was fitted by comparing visible source candidates with detections on the original space background. Its half-completeness limit is **V = {sky['magnitude_50']:.2f}** at half a focal length off axis, with a logistic width of {sky['completeness_width']:.2f} mag. The original matched-filter detection threshold is {cfg['sky']['minimum_snr']:.1f} in empirical local-noise units. Position-dependent completeness gives V limits of {np.round(sky['extension_limit_v'],2).tolist()} across the eligible extension (min/median/max). The renderer continues down the measured completeness curve to a probability floor of {100*sky['min_detection_probability']:.1f}% and a catalog ceiling of V = {sky['rendered_max_v']:.2f}. Catalog flux is attenuated at the camera edge using the fitted photometry. **{sky['rendered']}** of {sky['eligible_outside']} eligible stars were rendered, including {sky['below_half_completeness']} sources below the local half-completeness level. Their individual measured-model fluxes determine whether they rise above the background. The actual image already supplies the in-footprint stars. In the extension all added point sources are catalog projections.
 
 The fit measured {sky['psf_stars']} bright stellar profiles. Median geometric-mean FWHM is {sky['fwhm_median']:.2f} px after grading and {sky['fwhm_raw_median'] or float('nan'):.2f} px in the NEF measurement. Local anisotropic profiles, empirical V-to-flux calibration with off-axis and B–V terms, and a weak Gaussian wing determine their appearance. The robust log-flux model has {sky['log10_flux_rms']:.3f} dex RMS. The original measurement folds lens, window, exposure, and publication effects together. Relative star color is an approximate Johnson B–V rendering. The unobserved extension has no pixel-level optical ground truth.
@@ -150,6 +152,20 @@ The table uses display-luma codes on a 0–255 scale. Verification cuts lie betw
         text+=f"""## Sunward sky glow
 
 An optional artistic correction reduces the broad sunward background and its high-frequency noise. The photographed atmospheric rim and detected point sources are protected. The estimated maximum background correction was {glow['peak_background_reduction_8bit']:.2f} display-luma codes. This alters real sky information: NASA identifies zodiacal light in this region, and the present image cannot uniquely separate it from optical scattering. [NASA description](https://science.nasa.gov/earth/earth-observatory/a-moonlit-earth-as-seen-from-artemis-ii/)
+
+"""
+    stars=d.get("correct_stars",{})
+    if stars.get("enabled"):
+        text+=f"""## Star shape correction
+
+For {stars['corrected']:,} isolated sources an area-preserving transform reduces measured elongation, with integrated luminance renormalized. {stars['already_round']:,} were already round, while {stars['crowded']:,} crowded and {stars['ambiguous']:,} ambiguous detections were left unchanged. Geometric resampling changes subpixel information; this is an aesthetic correction and cannot guarantee preservation of every original detail.
+
+"""
+    black=d.get("amoled",{})
+    if black.get("enabled"):
+        text+=f"""## AMOLED sky
+
+After grain and sharpening, a smoothed sky estimate is subtracted from the background. Positive fine-scale residuals retain grain on a zero baseline. The atmospheric rim is protected and detected point sources use their own local background estimates. Catalog star light is recovered in linear RGB before encoding it against black. {black['black_pixels']:,} of {black['total_pixels']:,} master pixels are fully black.
 
 """
     video_grain=d.get("video_grain",{})

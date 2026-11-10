@@ -9,7 +9,7 @@ import subprocess
 import time
 import threading
 import tkinter as tk
-from tkinter import filedialog, messagebox, ttk
+from tkinter import messagebox, ttk
 
 from PIL import Image, ImageTk, ImageFont, ImageDraw
 
@@ -66,6 +66,7 @@ class StudioWindow:
         self.future=None
         self.job=None
         self.save_future=None
+        self.save_picker=None
         self.preview_due=0
         self.revision=0
         self.displayed_revision=-1
@@ -112,12 +113,6 @@ class StudioWindow:
         style.map("Accent.TButton",background=[("active","#359dca"),("disabled","#334352")])
         style.configure("TCombobox",padding=5,arrowsize=14)
         style.configure("TEntry",padding=7)
-        # Tk's Unix file picker draws its icon list using Treeview colors.
-        # Defining only the global foreground makes filenames white on white.
-        style.configure("Treeview",background="#202d3d",fieldbackground="#202d3d",
-                        foreground="#e5edf7")
-        style.map("Treeview",background=[("selected","#267eaa")],
-                  foreground=[("selected","#ffffff")])
         root.option_add("*TCombobox*Listbox.background","#202d3d")
         root.option_add("*TCombobox*Listbox.foreground","#e5edf7")
         root.option_add("*TCombobox*Listbox.selectBackground","#267eaa")
@@ -138,8 +133,10 @@ class StudioWindow:
                           ("sky_grain","Original sky texture"),
                           ("screen_grain","Video grain"),
                           ("clean_flare","Remove flare and haze"),
-                          ("sun_glow","Reduce sunward sky glow")):
-            var=tk.BooleanVar(value=True)
+                          ("sun_glow","Reduce sunward sky glow"),
+                          ("correct_stars","Correct stars"),
+                          ("amoled","AMOLED black sky")):
+            var=tk.BooleanVar(value=key!="amoled")
             self.variables[key]=var
             ttk.Checkbutton(sidebar,image=self.text_image(label),variable=var,command=self.request_preview).pack(anchor="w")
         self.label(sidebar,"Sharpening",muted=True).pack(anchor="w",pady=(15,4))
@@ -422,23 +419,60 @@ class StudioWindow:
         return path
 
     def save(self):
+        if self.save_picker is not None or self.save_future is not None:
+            return
         try:
             size=self.resolution()
         except ValueError as error:
             messagebox.showerror("Image size",str(error),parent=self.root)
             return
         self.output.mkdir(parents=True,exist_ok=True)
-        target=filedialog.asksaveasfilename(parent=self.root,title="Save wallpaper",initialdir=self.output,
-                  initialfile=f"artemis_ii_{size[0]}x{size[1]}.png",defaultextension=".png",
-                  filetypes=(("PNG, 16-bit","*.png"),("TIFF, 16-bit","*.tif *.tiff")))
-        if not target:
+        initial=self.output/f"artemis_ii_{size[0]}x{size[1]}.png"
+        try:
+            self.save_picker=subprocess.Popen(
+                ["kdialog","--title","Save wallpaper","--attach",str(self.root.winfo_id()),
+                 "--getsavefilename",str(initial),
+                 "*.png|PNG (16-bit)\n*.tif *.tiff|TIFF (16-bit)"],
+                stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+        except OSError as error:
+            messagebox.showerror("File picker",f"KDE file picker requires kdialog.\n{error}",parent=self.root)
             return
-        options=self.settings()
+        self.save_button.state(["disabled"])
+        self.set_save_status("Choose a file in the KDE dialog...")
+
+    def finish_save_picker(self):
+        picker=self.save_picker
+        if picker is None or picker.poll() is None:
+            return
+        stdout,stderr=picker.communicate()
+        self.save_picker=None
+        self.save_button.state(["!disabled"])
+        if picker.returncode==1:
+            self.set_save_status("Save cancelled")
+            return
+        if picker.returncode!=0:
+            messagebox.showerror("File picker",stderr.strip() or "KDE file picker failed",parent=self.root)
+            self.set_save_status("File picker failed")
+            return
+        if not stdout.strip():
+            self.set_save_status("Save cancelled")
+            return
+        target=Path(stdout.rstrip("\n"))
+        if target.suffix.lower() not in (".png",".tif",".tiff"):
+            messagebox.showerror("Image format","Choose a PNG or TIFF filename.",parent=self.root)
+            self.set_save_status("Choose PNG or TIFF")
+            return
+        try:
+            size=self.resolution()
+        except ValueError as error:
+            messagebox.showerror("Image size",str(error),parent=self.root)
+            return
         self.save_button.state(["disabled"])
         self.set_save_status("Rendering export with current settings...")
-        self.save_future=self.save_executor.submit(self.render_save,options,size,Path(target))
+        self.save_future=self.save_executor.submit(self.render_save,self.settings(),size,target)
 
     def poll(self):
+        self.finish_save_picker()
         if self.save_future is not None and self.save_future.done():
             try:
                 path=self.save_future.result()
@@ -484,6 +518,11 @@ class StudioWindow:
         self.root.after(80,self.poll)
 
     def close(self):
+        if self.save_picker is not None:
+            if self.save_picker.poll() is None:
+                self.save_picker.terminate()
+            self.save_picker.communicate()
+            self.save_picker=None
         if self.preview_cancel is not None:
             self.preview_cancel.set()
         self.executor.shutdown(wait=False,cancel_futures=True)

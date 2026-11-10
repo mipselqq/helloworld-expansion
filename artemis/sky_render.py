@@ -8,7 +8,7 @@ from scipy.spatial import cKDTree
 from scipy.special import expit
 
 from .astrometry import Camera, radec
-from .color import luma, srgb_decode
+from .color import luma, smoothstep, srgb_decode
 
 
 def rms(x):
@@ -116,12 +116,19 @@ def prepare(solve, graded, original, limb, affine, dimensions, cfg, raw=None):
     fit_near=cKDTree(detected.xy[bright_j]).query(p[ids],k=min(12,len(bright_j)))[1]
     shapes=np.median(profiles[fit_near][:,:,3:6],axis=1)
     flux=10**(model[ids]@c)
+    gain=float(cfg.get("extension_flux_gain",1.0))
+    fade=float(cfg.get("extension_gain_fade_px",180.0))
+    if not np.isfinite(gain) or gain<=0 or not np.isfinite(fade) or fade<=0:
+        raise ValueError("Extension star brightness and fade must be positive and finite")
+    outside=np.linalg.norm(p[ids]-np.clip(p[ids],[0,0],[w-1,h-1]),axis=1)
+    flux*=1+(gain-1)*smoothstep(outside/fade)
     stats={"magnitude_50":float(limit),"completeness_width":float(width),"offaxis_completeness_coefficient":float(vignetting),
            "extension_limit_v":np.percentile(local_limit[selected],[0,50,100]).tolist(), "bins":bins,
            "psf_stars":int(len(profiles)),"fwhm_median":float(np.median(2.355*np.sqrt(profiles[:,3]*profiles[:,4]))),
            "fwhm_raw_median":float(np.median(raw_fwhm)) if raw_fwhm else None,
            "fwhm_p10_p90":np.percentile(2.355*np.sqrt(profiles[:,3]*profiles[:,4]),[10,90]).tolist(),
            "log10_flux_model":c.tolist(),"log10_flux_rms":fit_error,
+           "extension_flux_gain":gain,"extension_gain_fade_px":fade,
            "eligible_outside":int(len(selected)),"rendered":int(len(ids)),
            "below_half_completeness":int((stars[ids,6]>local_limit[ids]).sum()),
            "rendered_max_v":float(stars[ids,6].max()), "min_detection_probability":pmin,
