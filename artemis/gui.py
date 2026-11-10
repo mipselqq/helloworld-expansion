@@ -112,6 +112,12 @@ class StudioWindow:
         style.map("Accent.TButton",background=[("active","#359dca"),("disabled","#334352")])
         style.configure("TCombobox",padding=5,arrowsize=14)
         style.configure("TEntry",padding=7)
+        # Tk's Unix file picker draws its icon list using Treeview colors.
+        # Defining only the global foreground makes filenames white on white.
+        style.configure("Treeview",background="#202d3d",fieldbackground="#202d3d",
+                        foreground="#e5edf7")
+        style.map("Treeview",background=[("selected","#267eaa")],
+                  foreground=[("selected","#ffffff")])
         root.option_add("*TCombobox*Listbox.background","#202d3d")
         root.option_add("*TCombobox*Listbox.foreground","#e5edf7")
         root.option_add("*TCombobox*Listbox.selectBackground","#267eaa")

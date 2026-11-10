@@ -57,3 +57,42 @@ def test_preview_is_replaceable_during_export(monkeypatch, tmp_path):
     finally:
         fake.save_done.set()
         app.close()
+
+
+def test_save_dialog_file_list_has_readable_colors(monkeypatch, tmp_path):
+    import tkinter as tk
+    from tkinter import filedialog
+    from artemis import gui
+
+    root = tk.Tk()
+    root.withdraw()
+    monkeypatch.setattr(gui, 'screens', lambda: [])
+    app = gui.StudioWindow(root, Path('config.toml'), fullscreen=False)
+    # Disable the scheduled preview for this short visual-style test.
+    app.displayed_revision = app.revision
+    (tmp_path/'wallpaper.png').write_bytes(b'')
+    observed = {}
+    def inspect():
+        def walk(widget):
+            yield widget
+            for child in root.tk.splitlist(root.tk.call('winfo','children',widget)):
+                yield from walk(child)
+        widgets = list(walk('.'))
+        for widget in widgets:
+            if str(root.tk.call('winfo','class',widget)) != 'Canvas' or '.icons.' not in widget:
+                continue
+            observed['background'] = root.tk.call(widget,'cget','-background')
+            for item in root.tk.splitlist(root.tk.call(widget,'find','all')):
+                if root.tk.call(widget,'type',item) == 'text':
+                    observed['foreground'] = root.tk.call(widget,'itemcget',item,'-fill')
+                    break
+        for widget in widgets:
+            if widget.endswith('.contents.f2.cancel'):
+                root.tk.call(widget,'invoke')
+                break
+    root.after(500, inspect)
+    try:
+        filedialog.asksaveasfilename(parent=root,initialdir=tmp_path,initialfile='out.png')
+        assert observed == {'background': '#202d3d', 'foreground': '#e5edf7'}
+    finally:
+        app.close()
