@@ -1,0 +1,161 @@
+{
+  "sources": [
+    {
+      "file": "source/art002e000192.jpg",
+      "url": "https://www.nasa.gov/wp-content/uploads/2026/04/art002e000192.jpg",
+      "sha256": "056569126615e8b0ff55a7228cb7965c6b6a449733b1614fbc0e7f5395e4f54a",
+      "bytes": 6174145
+    },
+    {
+      "file": "source/nasa_library.jpg",
+      "url": "https://images-assets.nasa.gov/image/art002e000192/art002e000192~orig.jpg",
+      "sha256": "64b9cd68cdc3b373f42ea6be8a94b8bea3f2485896efb44be4d11b183a2b9005",
+      "bytes": 6174505
+    },
+    {
+      "file": "source/raw_record.html",
+      "url": "https://esrs.jsc.nasa.gov/SearchPhotos/photo.pl?mission=ART002&roll=E&frame=192",
+      "sha256": "4f30d4da69169550c8666c46ccca9f48dcb3b3d3038d44ef7ff5ad9421290f61",
+      "bytes": 21164
+    },
+    {
+      "file": "source/ART002-E-192.txt",
+      "url": "https://esrs.jsc.nasa.gov/DatabaseCameraFiles/ART002/ART002-E-192.txt",
+      "sha256": "a07ab267e8c618d0e104ee558d8a9f3e0b4fa7f837b1118584976382c65eb96b",
+      "bytes": 866
+    },
+    {
+      "file": "kernels/naif0012.tls",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/pds/pds4/artemis2/artemis2_spice/spice_kernels/lsk/naif0012.tls",
+      "sha256": "678e32bdb5a744117a467cd9601cd6b373f0e9bc9bbde1371d5eee39600a039b",
+      "bytes": 5257
+    },
+    {
+      "file": "kernels/de440s.bsp",
+      "url": "https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de440s.bsp",
+      "sha256": "c1c7feeab882263fc493a9d5a5b2ddd71b54826cdf65d8d17a76126b260a49f2",
+      "bytes": 32726016
+    },
+    {
+      "file": "kernels/art002_rec_260402_260410_jsc_bet_revf.bsp",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/pds/pds4/artemis2/artemis2_spice/spice_kernels/spk/art002_rec_260402_260410_jsc_bet_revf.bsp",
+      "sha256": "b8b3ebc4d703c3a73c9651b9da36114c3ef0b2c75f92873dd4970f32367aa7be",
+      "bytes": 5693440
+    },
+    {
+      "file": "kernels/art002_rec_260402_260410_jsc_bet_revf_gapfill.bsp",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/pds/pds4/artemis2/artemis2_spice/spice_kernels/spk/art002_rec_260402_260410_jsc_bet_revf_gapfill.bsp",
+      "sha256": "ac9e3f21302a6a510757fff41a9f8a55df907b75fb2142b8fdfc44a599ddc9b9",
+      "bytes": 50176
+    },
+    {
+      "file": "kernels/pck00011.tpc",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/pds/pds4/artemis2/artemis2_spice/spice_kernels/pck/pck00011.tpc",
+      "sha256": "3dff7b1dbeceaa01f25467767d3fa25816051c85d162d1edf04acb310ee28bb1",
+      "bytes": 131226
+    },
+    {
+      "file": "kernels/earth_000101_261115_260819.bpc",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/pds/pds4/artemis2/artemis2_spice/spice_kernels/pck/earth_000101_261115_260819.bpc",
+      "sha256": "326609835fc35b62bbe54157a472654b8267635af0719b7ce70150b42eae5f28",
+      "bytes": 5117952
+    },
+    {
+      "file": "kernels/art002_handcam_v0.ti",
+      "url": "https://naif.jpl.nasa.gov/pub/naif/pds/pds4/artemis2/artemis2_spice/spice_kernels/ik/art002_handcam_v0.ti",
+      "sha256": "cac96b36a94936bca3bef754b713cfc3f68768706ca796fc2bf80b65730bb122",
+      "bytes": 27031
+    },
+    {
+      "file": "catalog/ne_10m_coastline.zip",
+      "url": "https://naturalearth.s3.amazonaws.com/10m_physical/ne_10m_coastline.zip",
+      "sha256": "bfa04cdbcbef07ef90dfca1dabb48062eca29900a113df0f389303e255484017",
+      "bytes": 3069451
+    },
+    {
+      "file": "source/melodysheep_clip.mp4",
+      "url": "https://www.youtube.com/watch?v=SGxz4LQfRpo",
+      "sha256": "81b7e4305ff26a9a5c2cca2a5add486393e3f7ac2c47582e6b720dd2aa1da8c1",
+      "bytes": 29824855
+    },
+    {
+      "file": "catalog/hipparcos.tsv",
+      "url": "https://vizier.cfa.harvard.edu/viz-bin/asu-tsv",
+      "sha256": "345655076b8a9e5c48ba9455c47e0a5f9fc2b888af37b4e005adb1a0eca357f8",
+      "bytes": 4416813
+    },
+    {
+      "file": "source/art002e000192.NEF",
+      "url": "https://esrs.jsc.nasa.gov/OriginalImagery/art002e000192.NEF",
+      "sha256": "08c698c5144aaf63acdf9ca68d3e41be25bc609e9a23f6eb24405dcdc47d9297",
+      "bytes": 26025006
+    }
+  ],
+  "nasa_jpeg": {
+    "dimensions": [
+      5568,
+      3712
+    ],
+    "mode": "RGB",
+    "icc_bytes": 3144,
+    "exif": {
+      "ResolutionUnit": "2",
+      "ExifOffset": "252",
+      "ImageDescription": "FD02_for pao",
+      "Make": "NIKON CORPORATION",
+      "Model": "NIKON D5",
+      "Software": "Adobe Photoshop Lightroom Classic 15.2.1 (Windows)",
+      "DateTime": "2026:04:03 06:54:26",
+      "XResolution": "240.0",
+      "YResolution": "240.0",
+      "ExifVersion": "b'0231'",
+      "ShutterSpeedValue": "2.0",
+      "ApertureValue": "4.0",
+      "DateTimeOriginal": "2026:04:03 00:27:39",
+      "DateTimeDigitized": "2026:04:03 00:27:39",
+      "ExposureBiasValue": "1.0",
+      "MaxApertureValue": "3.0",
+      "MeteringMode": "5",
+      "LightSource": "0",
+      "Flash": "0",
+      "FocalLength": "22.0",
+      "ColorSpace": "1",
+      "WhiteBalance": "0",
+      "FocalLengthIn35mmFilm": "22",
+      "FocalPlaneXResolution": "1552.0561218261719",
+      "FocalPlaneYResolution": "1552.0561218261719",
+      "OffsetTime": "-05:00",
+      "SubsecTimeOriginal": "26",
+      "SubsecTimeDigitized": "26",
+      "FocalPlaneResolutionUnit": "3",
+      "SubjectDistanceRange": "0",
+      "SensingMethod": "2",
+      "FileSource": "b'\\x03'",
+      "ExposureTime": "0.25",
+      "FNumber": "4.0",
+      "SceneType": "b'\\x01'",
+      "ExposureProgram": "1",
+      "CFAPattern": "b'\\x02\\x00\\x02\\x00\\x00\\x01\\x01\\x02'",
+      "CustomRendered": "1",
+      "ISOSpeedRatings": "51200",
+      "ExposureMode": "1",
+      "SensitivityType": "2",
+      "BodySerialNumber": "3500017",
+      "RecommendedExposureIndex": "51200",
+      "LensSpecification": "(14.0, 24.0, 2.8, 2.8)",
+      "LensModel": "14.0-24.0 mm f/2.8",
+      "SceneCaptureType": "0",
+      "GainControl": "2",
+      "Contrast": "0",
+      "Saturation": "0",
+      "Sharpness": "0"
+    }
+  },
+  "raw_cached": true,
+  "video_acquisition": {
+    "yt_dlp": "/usr/bin/yt-dlp",
+    "cookies_from_browser": "firefox",
+    "format": "571",
+    "clip_sha256": "81b7e4305ff26a9a5c2cca2a5add486393e3f7ac2c47582e6b720dd2aa1da8c1"
+  }
+}

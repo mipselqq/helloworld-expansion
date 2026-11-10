@@ -1,0 +1,31 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# Keep the exact source assets required for an offline reproduction.
+/cache/*
+!/cache/source/
+/cache/source/*
+!/cache/source/art002e000192.jpg
+!/cache/source/art002e000192.NEF
+!/cache/source/nasa_library.jpg
+!/cache/source/ART002-E-192.txt
+!/cache/source/raw_record.html
+!/cache/source/melodysheep_clip.mp4
+!/cache/source/video_origin.json
+!/cache/catalog/
+/cache/catalog/*
+!/cache/catalog/hipparcos.tsv
+!/cache/catalog/ne_10m_coastline.zip
+!/cache/kernels/
+/cache/kernels/*
+!/cache/kernels/naif0012.tls
+!/cache/kernels/de440s.bsp
+!/cache/kernels/pck00011.tpc
+!/cache/kernels/earth_000101_261115_260819.bpc
+!/cache/kernels/art002_rec_260402_260410_jsc_bet_revf.bsp
+!/cache/kernels/art002_rec_260402_260410_jsc_bet_revf_gapfill.bsp
+!/cache/kernels/art002_handcam_v0.ti
+# Generated results stay local; compact reference models live in reference/.
+/output/

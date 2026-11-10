@@ -1,0 +1,30 @@
+NASA PHOTO ID				art002e000192.NEF
+GMT					2026:04:03 00:27:39
+MODEL					NIKON D5 S/N: 3500017
+NASA SN and Temp	   		
+Firmware				Ver.N.10
+Image Size				5584x3728
+Compression				Nikon NEF Compressed
+Exposure Program			Manual
+Shutter				1/4
+Aperture				4.0
+Meter Mode				Multi-segment
+Shooting Mode				Continuous, Exposure Bracketing
+ISO Speed				51200
+AF Area Mode				Single Area
+AF Points In Focus		E9
+Focal Length				22.0 mm
+Lens ID				AF-S Zoom-Nikkor 14-24mm f/2.8G ED
+DOF					5.03 m (1.55 - 6.58 m)
+Focus Mode				AF-S
+Focus Distance				2.51 m
+Subject Distance Range			Unknown
+Compensation	           	+1
+Noise Reduction			FPNR
+Whitebalance	           	Auto0
+Flash					No Flash
+Flash Mode	             	Did Not Fire
+Flash Compensation		0
+Flash Group A Control Mode		Off
+Flash Group B Control Mode		Off
+Self Timer Time	        	10 s

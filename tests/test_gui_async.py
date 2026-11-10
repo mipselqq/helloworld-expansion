@@ -1,0 +1,59 @@
+import os
+import time
+import threading
+from concurrent.futures import CancelledError
+from pathlib import Path
+from types import SimpleNamespace
+
+import pytest
+from PIL import Image
+
+pytestmark = pytest.mark.skipif(not os.environ.get('DISPLAY'), reason='Tk needs an X display')
+
+
+def test_preview_is_replaceable_during_export(monkeypatch, tmp_path):
+    import tkinter as tk
+    from artemis import gui
+    class FakeProject:
+        def __init__(self):
+            self.save_started = threading.Event()
+            self.save_done = threading.Event()
+            self.previews = []
+        def preview_view(self, options, size, dimensions, center, zoom, cancel):
+            for _ in range(35):
+                if cancel.is_set():
+                    raise CancelledError()
+                time.sleep(.01)
+            self.previews.append((options, center, zoom))
+            return Image.new('RGB', dimensions)
+        def save(self, options, size, path):
+            self.save_started.set()
+            assert self.save_done.wait(8)
+    root = tk.Tk()
+    root.withdraw()
+    monkeypatch.setattr(gui, 'screens', lambda: [])
+    monkeypatch.setattr(gui.filedialog, 'asksaveasfilename', lambda **kw: str(tmp_path/'out.png'))
+    app = gui.StudioWindow(root, Path('config.toml'), fullscreen=False)
+    fake = FakeProject()
+    app.project = fake
+    def wait_for(check, timeout=5):
+        end = time.monotonic() + timeout
+        while time.monotonic() < end:
+            root.update()
+            if check():
+                return
+            time.sleep(.01)
+        pytest.fail('UI job did not finish in time')
+    try:
+        wait_for(lambda: app.future is not None)
+        app.save()
+        wait_for(fake.save_started.is_set)
+        app.variables['grade'].set(False)
+        app.wheel(SimpleNamespace(x=10, y=10, num=4, delta=0))
+        assert app.zoom > 1
+        wait_for(lambda: bool(fake.previews) and app.displayed_revision == app.revision)
+        assert not fake.previews[-1][0].grade
+        assert not fake.save_done.is_set()
+    finally:
+        fake.save_done.set()
+        app.close()

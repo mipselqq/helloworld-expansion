@@ -1,0 +1,12 @@
+*.NEF binary
+*.jpg binary
+*.mp4 binary
+*.bsp binary
+*.bpc binary
+*.zip binary
+# Preserve upstream catalog and metadata byte-for-byte, including whitespace.
+cache/catalog/hipparcos.tsv -diff
+cache/kernels/*.tls -diff
+cache/kernels/*.ti -diff
+cache/source/*.txt -diff
+cache/source/*.html -diff

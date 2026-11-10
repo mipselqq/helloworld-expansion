@@ -1,0 +1,93 @@
+[paths]
+cache = "cache"
+output = "output"
+
+[source]
+capture_utc = "2026-04-03T00:27:39.26"
+photo_url = "https://www.nasa.gov/wp-content/uploads/2026/04/art002e000192.jpg"
+library_url = "https://images-assets.nasa.gov/image/art002e000192/art002e000192~orig.jpg"
+archive_record = "https://esrs.jsc.nasa.gov/SearchPhotos/photo.pl?mission=ART002&roll=E&frame=192"
+archive_metadata = "https://esrs.jsc.nasa.gov/DatabaseCameraFiles/ART002/ART002-E-192.txt"
+raw_url = "https://esrs.jsc.nasa.gov/OriginalImagery/art002e000192.NEF"
+video_url = "https://www.youtube.com/watch?v=SGxz4LQfRpo"
+format = "571"
+yt_dlp = "/usr/bin/yt-dlp"
+cookies_from_browser = "firefox"
+clip_start = 303
+clip_end = 312
+target_second = 307.0
+frame_window = 1.25
+frame_step = 4
+
+[sky]
+focal_mm = 22.0
+pitch_mm = 0.006434
+initial_venus_xy = [3888, 3397]
+max_catalog_magnitude = 8.5
+faint_relative_detection = 0.025
+minimum_snr = 5.0
+minimum_projection_inliers = 12
+bootstrap_trials = 48
+max_extension_uncertainty_px = 12.0
+
+[render]
+seed = 5565
+feather = 110
+grain_patch = 80
+grain_overlap = 16
+grain_decay_px = 480
+texture_probe_origins = [[0.3117, 0.7264], [0.0638, 0.6793], [0.8705, 0.6793]]
+texture_probe_size = [450, 230]
+minimum_height = 3712
+desktop_width = 3440
+desktop_height = 1440
+
+[flare]
+enabled = true
+protect_limb = [1.045, 1.085]
+protect_venus_px = [52, 105]
+# Native NASA pixels. Each guide supplies (along, across) search coordinates.
+[[flare.ridges]]
+name = "Long window arc"
+axis = "y"
+guide = [[0, 346], [250, 172], [500, 96], [750, 75], [1000, 111], [1250, 196], [1500, 302], [1750, 456], [2000, 652], [2250, 865], [2500, 1090], [2750, 1302], [3000, 1522], [3250, 1712], [3500, 1940], [3711, 2180]]
+step = 32
+search_px = 68
+sigma_px = [13, 58]
+minimum_contrast = 0.40
+halo_along_px = [2775, 3711]
+halo_half_width_px = 270
+
+[[flare.ridges]]
+name = "Short window arc below Venus"
+axis = "x"
+guide = [[3760, 3750], [4000, 3694], [4260, 3640], [4520, 3585], [4810, 3531], [5120, 3483], [5500, 3420]]
+step = 28
+search_px = 52
+sigma_px = [12, 49]
+minimum_contrast = 0.30
+
+[video_grain]
+enabled = true
+strength = 1.0
+seed = 307254
+
+[sun_glow]
+enabled = true
+analysis_scale = 8
+strength = 0.90
+noise_strength = 0.55
+outer_cos = 0.35
+inner_cos = 0.72
+rim_start = 1.025
+rim_end = 1.24
+
+[sharpness]
+enabled = true
+sigmas_px = [0.85, 2.15, 5.2]
+# Coefficients fitted on the approved aurora comparison, fine through broad.
+clouds = [-0.59285427, 0.30379360, -0.15243064]
+limb = [-0.57544883, 0.31472061, -0.12154058]
+sky = [-0.78408772, -0.17672621, 0.11699585]
+aurora_center_native = [3161.034, 229.970]
+aurora_crop = [900, 470]

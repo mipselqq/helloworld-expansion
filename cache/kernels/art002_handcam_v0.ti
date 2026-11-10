@@ -1,0 +1,628 @@
+KPL/IK
+
+
+Artemis 2 Handheld Cameras Instrument Kernel
+===============================================================================
+
+   This Instrument Kernel (IK) file contains Field-Of-View (FOV) definitions 
+   and other parameters for various Artemis 2 Orion handheld cameras -- 
+   Nikon D5 cameras (NKD5015, NKD5017), Nikon Z9 camera (NKZ9019) and 
+   iPhone 17 Pro Max main and telephoto cameras (IPHONE).
+
+
+Version and Date
+----------------------------------------------------------
+
+   Version 0.0 -- October 1, 2026 -- Boris Semenov, NAIF/JPL
+
+      Initial version.
+
+
+References
+----------------------------------------------------------
+
+   1. Kernel Pool Required Reading
+
+   2. Frames Required Reading
+
+   3. Artemis 2 Frames Kernel, latest version
+
+   4. Artemis 2 OSDMP, various versions
+
+   5. A2_Camera_Sensor_Specs spreadsheet, by David Hollibaugh Baker
+
+
+Contact Information
+----------------------------------------------------------
+
+   Boris Semenov, NAIF/JPL, (818)-354-8136, Boris.Semenov@jpl.nasa.gov
+
+
+Implementation Notes
+----------------------------------------------------------
+
+   This file is used by the SPICE system as follows: programs that make
+   use of this frame kernel must `load' the kernel, normally during
+   program initialization. Loading the kernel associates the data items
+   with their names in a data structure called the "kernel pool". The
+   SPICE API FURNSH loads a kernel into the pool as shown below:
+
+      FORTRAN (SPICELIB):       CALL FURNSH ( instrument_kernel_name )
+
+      C (CSPICE):               furnsh_c ( instrument_kernel_name );
+
+      IDL (ICY):                cspice_furnsh, instrument_kernel_name
+
+      MATLAB (MICE):            cspice_furnsh ( 'instrument_kernel_name' )
+
+      PYTHON (SPICEYPY):        furnsh( instrument_kernel_name )
+
+   This file was created and may be updated with a text editor or word
+   processor.
+
+
+Naming Conventions
+----------------------------------------------------------
+
+   All names referencing values in this I-kernel start with the
+   characters `INS' followed by the NAIF Artemis 2 spacecraft ID number
+   (-24) followed by a NAIF three digit ID code for one of the
+   handheld cameras, defined in [3] as:
+
+
+      ART002_NKD5015                -24310
+      ART002_NKD5015_FL14           -24311
+      ART002_NKD5015_FL24           -24312
+      ART002_NKD5015_FL35           -24313
+      ART002_NKD5015_FL80           -24314
+      ART002_NKD5015_FL400          -24315
+
+      ART002_NKD5017                -24320
+      ART002_NKD5017_FL14           -24321
+      ART002_NKD5017_FL24           -24322
+      ART002_NKD5017_FL35           -24323
+      ART002_NKD5017_FL80           -24324
+      ART002_NKD5017_FL400          -24325
+
+      ART002_NKZ9019                -24330
+      ART002_NKZ9019_FL14           -24331
+      ART002_NKZ9019_FL24           -24332
+      ART002_NKZ9019_FL35           -24333
+      ART002_NKZ9019_FL80           -24334
+      ART002_NKZ9019_FL400          -24335
+
+      ART002_IPHONE                 -24340
+      ART002_IPHONE_TELE            -24341
+
+   (NKD5015 = Nikon D5 with SN ending in 015, NKD5017 NKD5015 = Nikon
+   D5 with SN ending in 017, NKZ9019 = Nikon Z9 with SN ending in 019,
+   IPHONE =  iPhone 17 Pro Max, _FLnn = focal length "nn" optics, 
+   _TELE = iPhone telephoto camera).
+
+   Nikon cameras without the _FLnn suffix provide parameters for the
+   35 mm optics.
+ 
+   The remainder of the name is an underscore character followed by the
+   unique name of the data item. For example, the NKD5015 camera boresight
+   direction in the NKD5015 camera frame (``ART002_NKD5015'' -- see [3])
+   is specified by:
+
+      INS-24310_BORESIGHT
+
+   The upper bound on the length of the name of any data item is 32
+   characters.
+ 
+   If the same item is included in more than one file, or if the same
+   item appears more than once within a single file, the latest value
+   supersedes any earlier values.
+
+
+Handheld Camera Descriptions
+---------------------------------------------------------
+
+   The Artemis 2 handheld cameras are described in [4].
+
+
+Mounting Alignment
+--------------------------------------------------------
+
+   Refer to the latest version of the Artemis 2 Frames Definition Kernel
+   (FK) [3] for the Artemis 2 handheld camera reference frame definitions and
+   mounting alignment information.
+
+
+Apparent FOV Layout
+--------------------------------------------------------
+
+   This section provides a diagram illustrating the handheld cameras'
+   apparent FOV layout in their corresponding reference frames.
+
+   Pixel (1,1) is in the top left corner of the image, and pixel
+   ("Pixels","Lines") is in the bottom right corner. +X, +Y, +Z axes
+   are defined in the Artemis 2 Frames Definition Kernel (FK) [3].
+
+
+                                     Boresight (+Z axis)
+                                        is into the page
+
+            (0,0)    "Pixels" pixels/line
+            pixel *-----------------------+            ---
+                  |                       |             ^
+                  |                       |             |
+                  |                       |             |
+                  |        +Z             |  +X         |
+          "Lines" |           x------------->           | "YSIZE"
+           lines  |           |           |             |  deg
+                  |           |           |             |
+                  |           |           |             |
+                  |           |           |             v
+                  +-----------|-----------*            ---
+                              |  ("Pixels","Lines")
+                              v         pixel
+                           +Y
+
+
+                  |      "XSIZE" deg      |
+                  |<--------------------->|
+                  |                       |
+
+
+   The "XSIZE", "YSIZE", "Pixels", and "Lines" parameters used in the
+   diagram are shown in the summary tables and are incorporated into
+   the corresponding IK keywords in the sections below.
+
+
+Handheld Camera FOVs
+----------------------------------------------------------
+
+   This table summarizes the handheld camera FOV parameters:
+
+   Name                 ID     Shape XSIZE  YSIZE     Frame     BSIGHT Cross
+   -------------------- ------ ---- ------ ------ -------------- ----- -----
+   ART002_NKD5015       -24310 RECT 27.102 18.839 ART002_NKD5015 0,0,1 1,0,0
+   ART002_NKD5015_FL14  -24311 RECT 51.989 40.463 ART002_NKD5015 0,0,1 1,0,0
+   ART002_NKD5015_FL24  -24312 RECT 36.736 26.453 ART002_NKD5015 0,0,1 1,0,0
+   ART002_NKD5015_FL35  -24313 RECT 27.102 18.839 ART002_NKD5015 0,0,1 1,0,0
+   ART002_NKD5015_FL80  -24314 RECT 12.621  8.490 ART002_NKD5015 0,0,1 1,0,0
+   ART002_NKD5015_FL400 -24315 RECT  2.564  1.710 ART002_NKD5015 0,0,1 1,0,0
+   ART002_NKD5017       -24320 RECT 27.102 18.839 ART002_NKD5017 0,0,1 1,0,0
+   ART002_NKD5017_FL14  -24321 RECT 51.989 40.463 ART002_NKD5017 0,0,1 1,0,0
+   ART002_NKD5017_FL24  -24322 RECT 36.736 26.453 ART002_NKD5017 0,0,1 1,0,0
+   ART002_NKD5017_FL35  -24323 RECT 27.102 18.839 ART002_NKD5017 0,0,1 1,0,0
+   ART002_NKD5017_FL80  -24324 RECT 12.621  8.490 ART002_NKD5017 0,0,1 1,0,0
+   ART002_NKD5017_FL400 -24325 RECT  2.564  1.710 ART002_NKD5017 0,0,1 1,0,0
+   ART002_NKZ9019       -24330 RECT 27.133 18.862 ART002_NKZ9019 0,0,1 1,0,0
+   ART002_NKZ9019_FL14  -24331 RECT 52.026 40.501 ART002_NKZ9019 0,0,1 1,0,0
+   ART002_NKZ9019_FL24  -24332 RECT 36.772 26.484 ART002_NKZ9019 0,0,1 1,0,0
+   ART002_NKZ9019_FL35  -24333 RECT 27.133 18.862 ART002_NKZ9019 0,0,1 1,0,0
+   ART002_NKZ9019_FL80  -24334 RECT 12.637  8.501 ART002_NKZ9019 0,0,1 1,0,0
+   ART002_NKZ9019_FL400 -24335 RECT  2.567  1.712 ART002_NKZ9019 0,0,1 1,0,0
+   ART002_IPHONE        -24340 RECT 35.270 27.943 ART002_IPHONE  0,0,1 1,0,0
+   ART002_IPHONE_TELE   -24341 RECT  9.866  7.431 ART002_IPHONE  0,0,1 1,0,0
+
+   The XSIZE and YSIZE are half-extents in degrees computed using the 
+   detector and optical parameters from the next section as follows:
+
+      XSIZE = atan( Pixels * Pix size / 2, FL ) 
+
+      YSIZE = atan( Lines  * Pix size / 2, FL )
+
+   The keywords below define FOVs based on the parameters above.
+
+   \begindata
+
+      INS-24310_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24310_FOV_SHAPE            = 'RECTANGLE'
+      INS-24310_FOV_FRAME            = 'ART002_NKD5015'
+      INS-24310_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24310_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24310_FOV_REF_ANGLE        = ( 27.102 )
+      INS-24310_FOV_CROSS_ANGLE      = ( 18.839 )
+      INS-24310_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24311_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24311_FOV_SHAPE            = 'RECTANGLE'
+      INS-24311_FOV_FRAME            = 'ART002_NKD5015'
+      INS-24311_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24311_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24311_FOV_REF_ANGLE        = ( 51.989 )
+      INS-24311_FOV_CROSS_ANGLE      = ( 40.463 )
+      INS-24311_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24312_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24312_FOV_SHAPE            = 'RECTANGLE'
+      INS-24312_FOV_FRAME            = 'ART002_NKD5015'
+      INS-24312_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24312_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24312_FOV_REF_ANGLE        = ( 36.736 )
+      INS-24312_FOV_CROSS_ANGLE      = ( 26.453 )
+      INS-24312_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24313_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24313_FOV_SHAPE            = 'RECTANGLE'
+      INS-24313_FOV_FRAME            = 'ART002_NKD5015'
+      INS-24313_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24313_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24313_FOV_REF_ANGLE        = ( 27.102 )
+      INS-24313_FOV_CROSS_ANGLE      = ( 18.839 )
+      INS-24313_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24314_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24314_FOV_SHAPE            = 'RECTANGLE'
+      INS-24314_FOV_FRAME            = 'ART002_NKD5015'
+      INS-24314_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24314_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24314_FOV_REF_ANGLE        = ( 12.621 )
+      INS-24314_FOV_CROSS_ANGLE      = ( 8.490 )
+      INS-24314_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24315_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24315_FOV_SHAPE            = 'RECTANGLE'
+      INS-24315_FOV_FRAME            = 'ART002_NKD5015'
+      INS-24315_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24315_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24315_FOV_REF_ANGLE        = ( 2.564 )
+      INS-24315_FOV_CROSS_ANGLE      = ( 1.710 )
+      INS-24315_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24320_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24320_FOV_SHAPE            = 'RECTANGLE'
+      INS-24320_FOV_FRAME            = 'ART002_NKD5017'
+      INS-24320_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24320_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24320_FOV_REF_ANGLE        = ( 27.102 )
+      INS-24320_FOV_CROSS_ANGLE      = ( 18.839 )
+      INS-24320_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24321_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24321_FOV_SHAPE            = 'RECTANGLE'
+      INS-24321_FOV_FRAME            = 'ART002_NKD5017'
+      INS-24321_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24321_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24321_FOV_REF_ANGLE        = ( 51.989 )
+      INS-24321_FOV_CROSS_ANGLE      = ( 40.463 )
+      INS-24321_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24322_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24322_FOV_SHAPE            = 'RECTANGLE'
+      INS-24322_FOV_FRAME            = 'ART002_NKD5017'
+      INS-24322_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24322_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24322_FOV_REF_ANGLE        = ( 36.736 )
+      INS-24322_FOV_CROSS_ANGLE      = ( 26.453 )
+      INS-24322_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24323_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24323_FOV_SHAPE            = 'RECTANGLE'
+      INS-24323_FOV_FRAME            = 'ART002_NKD5017'
+      INS-24323_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24323_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24323_FOV_REF_ANGLE        = ( 27.102 )
+      INS-24323_FOV_CROSS_ANGLE      = ( 18.839 )
+      INS-24323_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24324_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24324_FOV_SHAPE            = 'RECTANGLE'
+      INS-24324_FOV_FRAME            = 'ART002_NKD5017'
+      INS-24324_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24324_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24324_FOV_REF_ANGLE        = ( 12.621 )
+      INS-24324_FOV_CROSS_ANGLE      = ( 8.490 )
+      INS-24324_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24325_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24325_FOV_SHAPE            = 'RECTANGLE'
+      INS-24325_FOV_FRAME            = 'ART002_NKD5017'
+      INS-24325_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24325_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24325_FOV_REF_ANGLE        = ( 2.564 )
+      INS-24325_FOV_CROSS_ANGLE      = ( 1.710 )
+      INS-24325_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24330_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24330_FOV_SHAPE            = 'RECTANGLE'
+      INS-24330_FOV_FRAME            = 'ART002_NKZ9019'
+      INS-24330_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24330_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24330_FOV_REF_ANGLE        = ( 27.133 )
+      INS-24330_FOV_CROSS_ANGLE      = ( 18.862 )
+      INS-24330_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24331_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24331_FOV_SHAPE            = 'RECTANGLE'
+      INS-24331_FOV_FRAME            = 'ART002_NKZ9019'
+      INS-24331_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24331_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24331_FOV_REF_ANGLE        = ( 52.026 )
+      INS-24331_FOV_CROSS_ANGLE      = ( 40.501 )
+      INS-24331_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24332_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24332_FOV_SHAPE            = 'RECTANGLE'
+      INS-24332_FOV_FRAME            = 'ART002_NKZ9019'
+      INS-24332_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24332_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24332_FOV_REF_ANGLE        = ( 36.772 )
+      INS-24332_FOV_CROSS_ANGLE      = ( 26.484 )
+      INS-24332_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24333_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24333_FOV_SHAPE            = 'RECTANGLE'
+      INS-24333_FOV_FRAME            = 'ART002_NKZ9019'
+      INS-24333_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24333_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24333_FOV_REF_ANGLE        = ( 27.133 )
+      INS-24333_FOV_CROSS_ANGLE      = ( 18.862 )
+      INS-24333_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24334_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24334_FOV_SHAPE            = 'RECTANGLE'
+      INS-24334_FOV_FRAME            = 'ART002_NKZ9019'
+      INS-24334_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24334_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24334_FOV_REF_ANGLE        = ( 12.637 )
+      INS-24334_FOV_CROSS_ANGLE      = ( 8.501 )
+      INS-24334_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24335_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24335_FOV_SHAPE            = 'RECTANGLE'
+      INS-24335_FOV_FRAME            = 'ART002_NKZ9019'
+      INS-24335_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24335_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24335_FOV_REF_ANGLE        = ( 2.567 )
+      INS-24335_FOV_CROSS_ANGLE      = ( 1.712 )
+      INS-24335_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24340_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24340_FOV_SHAPE            = 'RECTANGLE'
+      INS-24340_FOV_FRAME            = 'ART002_IPHONE'
+      INS-24340_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24340_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24340_FOV_REF_ANGLE        = ( 35.270 )
+      INS-24340_FOV_CROSS_ANGLE      = ( 27.943 )
+      INS-24340_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+      INS-24341_FOV_CLASS_SPEC       = 'ANGLES'
+      INS-24341_FOV_SHAPE            = 'RECTANGLE'
+      INS-24341_FOV_FRAME            = 'ART002_IPHONE'
+      INS-24341_BORESIGHT            = ( 0.0, 0.0, 1.0 )
+      INS-24341_FOV_REF_VECTOR       = ( 1.0, 0.0, 0.0 )
+      INS-24341_FOV_REF_ANGLE        = ( 9.866 )
+      INS-24341_FOV_CROSS_ANGLE      = ( 7.431 )
+      INS-24341_FOV_ANGLE_UNITS      = ( 'DEGREES' )
+
+   \begintext
+
+
+Artemis 2 Handheld Camera Detector Parameters
+----------------------------------------------------------
+
+   This table summarizes the fixed camera detector and optical parameters,
+   from [5]:
+
+      Name                 ID     Pixels Lines  FL,mm  Pix size,mm
+      -------------------- ------ ------ ------ ------ -----------
+      ART002_NKD5015       -24310  5568   3712   35.0    0.006434
+      ART002_NKD5015_FL14  -24311  5568   3712   14.0    0.006434
+      ART002_NKD5015_FL24  -24312  5568   3712   24.0    0.006434
+      ART002_NKD5015_FL35  -24313  5568   3712   35.0    0.006434
+      ART002_NKD5015_FL80  -24314  5568   3712   80.0    0.006434
+      ART002_NKD5015_FL400 -24315  5568   3712  400.0    0.006434
+      ART002_NKD5017       -24320  5568   3712   35.0    0.006434
+      ART002_NKD5017_FL14  -24321  5568   3712   14.0    0.006434
+      ART002_NKD5017_FL24  -24322  5568   3712   24.0    0.006434
+      ART002_NKD5017_FL35  -24323  5568   3712   35.0    0.006434
+      ART002_NKD5017_FL80  -24324  5568   3712   80.0    0.006434
+      ART002_NKD5017_FL400 -24325  5568   3712  400.0    0.006434
+      ART002_NKZ9019       -24330  8256   5504   35.0    0.004345
+      ART002_NKZ9019_FL14  -24331  8256   5504   14.0    0.004345
+      ART002_NKZ9019_FL24  -24332  8256   5504   24.0    0.004345
+      ART002_NKZ9019_FL35  -24333  8256   5504   35.0    0.004345
+      ART002_NKZ9019_FL80  -24334  8256   5504   80.0    0.004345
+      ART002_NKZ9019_FL400 -24335  8256   5504  400.0    0.004345
+      ART002_IPHONE        -24340  8000   6000    6.9    0.00122
+      ART002_IPHONE_TELE   -24341  8000   6000   16.1    0.0007
+
+   The keywords below provide these parameters for each of the camera/
+   specific focal length combinations.
+
+   Additional keywords below provide iFOV size in radians and center pixel
+   coordinates, computed as follows:
+
+      iFOV = atan2( Pix size, FL )
+
+      CCD Center = ( Pixels / 2 + 0.5, Lines / 2 + 0.5 )
+
+   \begindata
+
+      INS-24310_PIXEL_SAMPLES        = ( 5568  )
+      INS-24310_PIXEL_LINES          = ( 3712  )
+      INS-24310_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24310_FOCAL_LENGTH         = ( 35.0 )
+      INS-24310_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24310_PIXEL_SIZE           = ( 0.006434 )
+      INS-24310_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24310_IFOV                 = ( 0.0001838285693579 )
+
+      INS-24311_PIXEL_SAMPLES        = ( 5568  )
+      INS-24311_PIXEL_LINES          = ( 3712  )
+      INS-24311_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24311_FOCAL_LENGTH         = ( 14.0 )
+      INS-24311_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24311_PIXEL_SIZE           = ( 0.006434 )
+      INS-24311_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24311_IFOV                 = ( 0.0004595713962167 )
+
+      INS-24312_PIXEL_SAMPLES        = ( 5568  )
+      INS-24312_PIXEL_LINES          = ( 3712  )
+      INS-24312_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24312_FOCAL_LENGTH         = ( 24.0 )
+      INS-24312_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24312_PIXEL_SIZE           = ( 0.006434 )
+      INS-24312_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24312_IFOV                 = ( 0.0002680833269111 )
+
+      INS-24313_PIXEL_SAMPLES        = ( 5568  )
+      INS-24313_PIXEL_LINES          = ( 3712  )
+      INS-24313_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24313_FOCAL_LENGTH         = ( 35.0 )
+      INS-24313_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24313_PIXEL_SIZE           = ( 0.006434 )
+      INS-24313_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24313_IFOV                 = ( 0.0001838285693579 )
+
+      INS-24314_PIXEL_SAMPLES        = ( 5568  )
+      INS-24314_PIXEL_LINES          = ( 3712  )
+      INS-24314_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24314_FOCAL_LENGTH         = ( 80.0 )
+      INS-24314_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24314_PIXEL_SIZE           = ( 0.006434 )
+      INS-24314_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24314_IFOV                 = ( 0.0000804249998266 )
+
+      INS-24315_PIXEL_SAMPLES        = ( 5568  )
+      INS-24315_PIXEL_LINES          = ( 3712  )
+      INS-24315_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24315_FOCAL_LENGTH         = ( 400.0 )
+      INS-24315_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24315_PIXEL_SIZE           = ( 0.006434 )
+      INS-24315_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24315_IFOV                 = ( 0.0000160849999986 )
+
+      INS-24320_PIXEL_SAMPLES        = ( 5568  )
+      INS-24320_PIXEL_LINES          = ( 3712  )
+      INS-24320_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24320_FOCAL_LENGTH         = ( 35.0 )
+      INS-24320_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24320_PIXEL_SIZE           = ( 0.006434 )
+      INS-24320_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24320_IFOV                 = ( 0.0001838285693579 )
+
+      INS-24321_PIXEL_SAMPLES        = ( 5568  )
+      INS-24321_PIXEL_LINES          = ( 3712  )
+      INS-24321_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24321_FOCAL_LENGTH         = ( 14.0 )
+      INS-24321_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24321_PIXEL_SIZE           = ( 0.006434 )
+      INS-24321_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24321_IFOV                 = ( 0.0004595713962167 )
+
+      INS-24322_PIXEL_SAMPLES        = ( 5568  )
+      INS-24322_PIXEL_LINES          = ( 3712  )
+      INS-24322_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24322_FOCAL_LENGTH         = ( 24.0 )
+      INS-24322_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24322_PIXEL_SIZE           = ( 0.006434 )
+      INS-24322_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24322_IFOV                 = ( 0.0002680833269111 )
+
+      INS-24323_PIXEL_SAMPLES        = ( 5568  )
+      INS-24323_PIXEL_LINES          = ( 3712  )
+      INS-24323_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24323_FOCAL_LENGTH         = ( 35.0 )
+      INS-24323_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24323_PIXEL_SIZE           = ( 0.006434 )
+      INS-24323_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24323_IFOV                 = ( 0.0001838285693579 )
+
+      INS-24324_PIXEL_SAMPLES        = ( 5568  )
+      INS-24324_PIXEL_LINES          = ( 3712  )
+      INS-24324_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24324_FOCAL_LENGTH         = ( 80.0 )
+      INS-24324_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24324_PIXEL_SIZE           = ( 0.006434 )
+      INS-24324_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24324_IFOV                 = ( 0.0000804249998266 )
+
+      INS-24325_PIXEL_SAMPLES        = ( 5568  )
+      INS-24325_PIXEL_LINES          = ( 3712  )
+      INS-24325_CCD_CENTER           = ( 2784.5, 1856.5 )
+      INS-24325_FOCAL_LENGTH         = ( 400.0 )
+      INS-24325_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24325_PIXEL_SIZE           = ( 0.006434 )
+      INS-24325_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24325_IFOV                 = ( 0.0000160849999986 )
+
+      INS-24330_PIXEL_SAMPLES        = ( 8256  )
+      INS-24330_PIXEL_LINES          = ( 5504  )
+      INS-24330_CCD_CENTER           = ( 4128.5, 2752.5 )
+      INS-24330_FOCAL_LENGTH         = ( 35.0 )
+      INS-24330_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24330_PIXEL_SIZE           = ( 0.004345 )
+      INS-24330_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24330_IFOV                 = ( 0.0001241428565051 )
+
+      INS-24331_PIXEL_SAMPLES        = ( 8256  )
+      INS-24331_PIXEL_LINES          = ( 5504  )
+      INS-24331_CCD_CENTER           = ( 4128.5, 2752.5 )
+      INS-24331_FOCAL_LENGTH         = ( 14.0 )
+      INS-24331_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24331_PIXEL_SIZE           = ( 0.004345 )
+      INS-24331_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24331_IFOV                 = ( 0.0003103571328924 )
+
+      INS-24332_PIXEL_SAMPLES        = ( 8256  )
+      INS-24332_PIXEL_LINES          = ( 5504  )
+      INS-24332_CCD_CENTER           = ( 4128.5, 2752.5 )
+      INS-24332_FOCAL_LENGTH         = ( 24.0 )
+      INS-24332_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24332_PIXEL_SIZE           = ( 0.004345 )
+      INS-24332_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24332_IFOV                 = ( 0.0001810416646887 )
+
+      INS-24333_PIXEL_SAMPLES        = ( 8256  )
+      INS-24333_PIXEL_LINES          = ( 5504  )
+      INS-24333_CCD_CENTER           = ( 4128.5, 2752.5 )
+      INS-24333_FOCAL_LENGTH         = ( 35.0 )
+      INS-24333_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24333_PIXEL_SIZE           = ( 0.004345 )
+      INS-24333_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24333_IFOV                 = ( 0.0001241428565051 )
+
+      INS-24334_PIXEL_SAMPLES        = ( 8256  )
+      INS-24334_PIXEL_LINES          = ( 5504  )
+      INS-24334_CCD_CENTER           = ( 4128.5, 2752.5 )
+      INS-24334_FOCAL_LENGTH         = ( 80.0 )
+      INS-24334_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24334_PIXEL_SIZE           = ( 0.004345 )
+      INS-24334_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24334_IFOV                 = ( 0.0000543124999466 )
+
+      INS-24335_PIXEL_SAMPLES        = ( 8256  )
+      INS-24335_PIXEL_LINES          = ( 5504  )
+      INS-24335_CCD_CENTER           = ( 4128.5, 2752.5 )
+      INS-24335_FOCAL_LENGTH         = ( 400.0 )
+      INS-24335_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24335_PIXEL_SIZE           = ( 0.004345 )
+      INS-24335_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24335_IFOV                 = ( 0.0000108624999996 )
+
+      INS-24340_PIXEL_SAMPLES        = ( 8000  )
+      INS-24340_PIXEL_LINES          = ( 6000  )
+      INS-24340_CCD_CENTER           = ( 4000.5, 3000.5 )
+      INS-24340_FOCAL_LENGTH         = ( 6.9 )
+      INS-24340_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24340_PIXEL_SIZE           = ( 0.00122 )
+      INS-24340_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24340_IFOV                 = ( 0.0001768115923604 )
+
+      INS-24341_PIXEL_SAMPLES        = ( 8000  )
+      INS-24341_PIXEL_LINES          = ( 6000  )
+      INS-24341_CCD_CENTER           = ( 4000.5, 3000.5 )
+      INS-24341_FOCAL_LENGTH         = ( 16.1 )
+      INS-24341_FOCAL_LENGTH_UNITS   = 'mm'
+      INS-24341_PIXEL_SIZE           = ( 0.0007 )
+      INS-24341_PIXEL_SIZE_UNITS     = 'mm'
+      INS-24341_IFOV                 = ( 0.0000434782608422 )
+
+   \begintext
+
+
+Artemis 2 Handheld Camera Optical Distortion Parameters
+----------------------------------------------------------
+
+   Optical distortion models were not available at the time of the
+   release of this IK.
+
+
+End of the IK file.
